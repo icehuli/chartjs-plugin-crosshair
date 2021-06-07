@@ -7,6 +7,9 @@ export default function(Chart) {
 			width: 1,
 			dashPattern: []
 		},
+		hLine: {
+			enabled: true,
+		},
 		sync: {
 			enabled: true,
 			group: 1,
@@ -254,16 +257,19 @@ export default function(Chart) {
 
 			if (chart.crosshair.dragStarted) {
 				this.drawZoombox(chart);
-			} else {
-				this.drawTraceLine(chart);
-				this.interpolateValues(chart);
-				this.drawTracePoints(chart);
 			}
 
 			return true;
 		},
 
 		beforeTooltipDraw: function(chart) {
+
+			if (chart.crosshair.enabled && !chart.crosshair.dragStarted) {
+				this.drawTraceLine(chart);
+				this.interpolateValues(chart);
+				this.drawTracePoints(chart);
+			}
+
 			// suppress tooltips on dragging
 			return !chart.crosshair.dragStarted && !chart.crosshair.suppressTooltips;
 		},
@@ -475,13 +481,23 @@ export default function(Chart) {
 			if (snapEnabled && isHoverIntersectOff && chart.active.length) {
 				lineX = chart.active[0]._view.x;
 			}
-
+			
 			chart.ctx.beginPath();
 			chart.ctx.setLineDash(dashPattern);
-			chart.ctx.moveTo(lineX, yScale.getPixelForValue(yScale.max));
 			chart.ctx.lineWidth = lineWidth;
 			chart.ctx.strokeStyle = color;
+			chart.ctx.moveTo(lineX, yScale.getPixelForValue(yScale.max));
 			chart.ctx.lineTo(lineX, yScale.getPixelForValue(yScale.min));
+
+			if (this.getOption(chart, 'hLine', 'enabled'))
+			{
+				var xScale = this.getXScale(chart);
+				var dataset = chart.data.datasets[0];
+				var lineY = yScale.getPixelForValue(dataset.interpolatedValue);
+				chart.ctx.moveTo(xScale.getPixelForValue(xScale.max), lineY);
+				chart.ctx.lineTo(xScale.getPixelForValue(xScale.min), lineY);
+			}
+
 			chart.ctx.stroke();
 			chart.ctx.setLineDash([]);
 
