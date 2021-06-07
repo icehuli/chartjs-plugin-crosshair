@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>chartjs-plugin-trace / sample</title>
+    <link rel="stylesheet" type="text/css" href="index.css" />
+    <link rel="icon" type="image/ico" href="favicon.ico" />
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0/dist/Chart.min.js"></script>
+    <script src="../chartjs-plugin-crosshair.js"></script>
+  </head>
+  <body>
+    <div class="split"><canvas id="chart2"></canvas></div>
+    <div class="split"><canvas id="chart3"></canvas></div>
+    <div class="chart"><canvas id="chart4"></canvas></div>
+  </body>
+
+  <script>
+    const BLUE_2  = 'rgba(0,0,100,0.1)';
+    const RED_2   = 'rgba(100,0,0,0.1)';
+    const GREEN_2 = 'rgba(0,100,0,0.1)';
+
+    function getChartOpts(traceLineColor) {
+      const pluginsOpts = {
+        crosshair: {
+          line: {
+            color: traceLineColor,
+            width: 1,             
+            dashPattern: [2, 6]   
+          },
+          hLine: {
+            enabled: false,
+          },
+          zoom: {enabled:false},
+        }
+      };
+      const chartOpts = {
+        plugins: pluginsOpts, 
+        legend: false,
+        tooltips: {
+          mode: "interpolate",
+          intersect: false,
+          callbacks: {
+            title: function(a, d) {
+              return a[0].xLabel.toFixed(2);
+            },
+            label: function(i, d) {
+              return (
+                d.datasets[i.datasetIndex].label + ": " + i.yLabel.toFixed(2)
+              );
+            }
+          }
+        },
+        scales: {
+          xAxes: [{
+            ticks: {
+              min: -2,
+              max: 40
+            }
+          }],
+          yAxes: [{
+            ticks: {
+              min: -2,
+              max: 2
+            }
+          }]
+        },
+      };
+      return chartOpts;
+    }
+    
+
+    function generateDataset(shift, label, color, fillcolor) {
+      var data = [];
+      var x = 0;
+      while (x < 30) {
+        data.push({ x: x, y: Math.sin(shift + x *0.2) });
+        x += Math.random();
+      }
+      var dataset = {
+        backgroundColor: fillcolor,
+        borderColor: color,
+        borderWidth: 1,
+        showLine: true,
+        fill: true,
+        pointRadius: 0,
+        label: label,
+        data: data,
+        lineTension: 0,
+        interpolate: true
+      };
+      return dataset;
+    }
+
+
+    var chart2 = new Chart(document.getElementById("chart2").getContext("2d"), {
+      type: "scatter",
+      options: getChartOpts("red"),
+      data: {
+        datasets: [generateDataset(0, "A", "red", RED_2)]
+      }
+    });
+    var chart3 = new Chart(document.getElementById("chart3").getContext("2d"), {
+      type: "scatter",
+      options: getChartOpts("green"),
+      data: {
+        datasets: [generateDataset(1, "B", "green", GREEN_2)]
+      }
+    });
+    var chart4 = new Chart(document.getElementById("chart4").getContext("2d"), {
+      type: "scatter",
+      options: getChartOpts("blue"),
+      data: {
+        datasets: [generateDataset(1, "C", "blue", BLUE_2)]
+      }
+    });
+  </script>
+</html>
