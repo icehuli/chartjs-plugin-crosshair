@@ -8,13 +8,11 @@
     <link rel="stylesheet" type="text/css" href="index.css" />
     <link rel="icon" type="image/ico" href="favicon.ico" />
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0/dist/Chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js"></script>
     <script src="../chartjs-plugin-crosshair.js"></script>
   </head>
   <body>
-    <div class="split"><canvas id="chart2"></canvas></div>
-    <div class="split"><canvas id="chart3"></canvas></div>
-    <div class="chart"><canvas id="chart4"></canvas></div>
+    <div id="chartContainer"></div>
   </body>
 
   <script>
@@ -31,7 +29,7 @@
             dashPattern: [2, 6]   
           },
           hLine: {
-            enabled: false,
+            enabled: true,
           },
           zoom: {enabled:false},
         }
@@ -39,6 +37,7 @@
       const chartOpts = {
         plugins: pluginsOpts, 
         legend: false,
+        responsive: false,
         tooltips: {
           mode: "interpolate",
           intersect: false,
@@ -57,13 +56,14 @@
           xAxes: [{
             ticks: {
               min: -2,
-              max: 40
-            }
+              max: 40,
+            },
+            gridLines: { display: false }
           }],
           yAxes: [{
             ticks: {
               min: -2,
-              max: 2
+              max: 2,
             }
           }]
         },
@@ -71,7 +71,6 @@
       return chartOpts;
     }
     
-
     function generateDataset(shift, label, color, fillcolor) {
       var data = [];
       var x = 0;
@@ -94,27 +93,34 @@
       return dataset;
     }
 
+    function drawCharts(containerEle) {
+      const BLUE_2  = 'rgba(0,0,100,0.1)';
+      const RED_2   = 'rgba(100, 0,0,0.1)';
+      const GREEN_2 = 'rgba(0,100,0,0.1)';
 
-    var chart2 = new Chart(document.getElementById("chart2").getContext("2d"), {
-      type: "scatter",
-      options: getChartOpts("red"),
-      data: {
-        datasets: [generateDataset(0, "A", "red", RED_2)]
+      const datasetsList = [
+          [generateDataset(0, "A", "red", RED_2)],
+          [generateDataset(1, "B", "green", GREEN_2)],
+          [generateDataset(1, "C", "blue", BLUE_2)]
+      ];
+
+      for (let i = 0; i < datasetsList.length; i++) {
+          const datasets = datasetsList[i];
+          const col = datasets[0].borderColor;
+          const canvas = document.createElement("canvas");
+          canvas.id = "chart" + i.toString();
+          containerEle.appendChild(canvas);
+
+          const chart = new Chart(canvas.getContext("2d"), {
+              type: "scatter",
+              options: getChartOpts(col),
+              data: {
+                  datasets: datasets
+              }
+          });
       }
-    });
-    var chart3 = new Chart(document.getElementById("chart3").getContext("2d"), {
-      type: "scatter",
-      options: getChartOpts("green"),
-      data: {
-        datasets: [generateDataset(1, "B", "green", GREEN_2)]
-      }
-    });
-    var chart4 = new Chart(document.getElementById("chart4").getContext("2d"), {
-      type: "scatter",
-      options: getChartOpts("blue"),
-      data: {
-        datasets: [generateDataset(1, "C", "blue", BLUE_2)]
-      }
-    });
+    }
+
+    drawCharts(document.getElementById("chartContainer"));
   </script>
 </html>
